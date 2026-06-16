@@ -1,4 +1,4 @@
-// Core domain types for the 2-player Mahjong game.
+// Core domain types for the 4-player Mahjong game.
 
 export type Suit = 'man' | 'pin' | 'sou' // characters, circles, bamboo
 export type Wind = 'E' | 'S' | 'W' | 'N'
@@ -26,51 +26,82 @@ export interface Meld {
   concealed: boolean
 }
 
+export type SeatKind = 'human' | 'ai'
+
+/** '1p3ai' = one human vs three AIs; '2p2ai' = two humans vs two AIs. */
+export type GameMode = '1p3ai' | '2p2ai'
+
 export interface PlayerState {
-  /** Concealed tiles still in hand. */
   hand: Tile[]
-  /** Exposed (and concealed-kong) melds. */
   melds: Meld[]
-  /** Bonus flower/season tiles set aside. */
   flowers: Tile[]
-  /** Tiles this player has discarded, oldest first. */
   discards: Tile[]
+  seat: Wind
+  kind: SeatKind
+  name: string
 }
 
-export type PlayerIndex = 0 | 1
+/** A possible sequence claim: the two hand tiles that complete the run. */
+export interface ChowOption {
+  tileIds: [string, string]
+}
+
+/** What a player may do with the tile up for claim. */
+export interface ClaimAvailability {
+  pung: boolean
+  kong: boolean
+  ron: boolean
+  chows: ChowOption[]
+}
+
+/** A player's decision on the tile up for claim. */
+export type ClaimIntent =
+  | { kind: 'pass' }
+  | { kind: 'pung' }
+  | { kind: 'kong' }
+  | { kind: 'ron' }
+  | { kind: 'chow'; tileIds: [string, string] }
+
+export interface ClaimResponder {
+  player: number
+  available: ClaimAvailability
+  decided: boolean
+  intent: ClaimIntent | null
+}
+
+export interface ClaimWindow {
+  tile: Tile
+  discarder: number
+  /** Every non-discarder; the window resolves once all have decided. */
+  responders: ClaimResponder[]
+}
 
 /**
- * Phase of the active player's access:
- * - 'choosing'   : start of turn — may claim opponent's last discard or draw.
- * - 'discarding' : holds a freshly drawn/claimed tile — must discard (or win/kong).
- * - 'over'       : round finished.
+ * Phase of play:
+ * - 'discard' : `current` player holds a drawn/claimed tile and must discard.
+ * - 'claim'   : a tile was just discarded; responders decide claim or pass.
+ * - 'over'    : round finished.
  */
-export type Phase = 'choosing' | 'discarding' | 'over'
+export type Phase = 'discard' | 'claim' | 'over'
 
 export type WinType = 'self-draw' | 'discard'
 
 export interface LastDiscard {
   tile: Tile
-  by: PlayerIndex
+  by: number
 }
 
 export interface GameState {
+  mode: GameMode
   wall: Tile[]
-  players: [PlayerState, PlayerState]
-  /** Whose access it currently is. */
-  current: PlayerIndex
+  players: PlayerState[] // length 4
+  current: number
   phase: Phase
+  claim: ClaimWindow | null
   lastDiscard: LastDiscard | null
-  /** Id of the tile just drawn this access (for highlighting). */
   drawnTileId: string | null
-  /**
-   * Hot-seat hand-off: when true the board hides the active hand and shows a
-   * "pass the device" screen until the active player taps to reveal.
-   */
-  awaitingPass: boolean
-  winner: PlayerIndex | null
+  winner: number | null
   winType: WinType | null
-  /** True when the wall ran out before anyone won. */
   drawnGame: boolean
   turnCount: number
   message: string

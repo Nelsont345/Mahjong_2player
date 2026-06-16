@@ -1,4 +1,4 @@
-import type { Tile, TileKind } from './types'
+import type { Tile, TileKind, ChowOption } from './types'
 import { tileKey, isSuited, isTerminalOrHonor } from './tiles'
 
 /** Count map keyed by canonical tileKey. */
@@ -128,11 +128,6 @@ export function isWinningHand(hand: Tile[], exposedMelds: number): boolean {
 }
 
 // ---- Claim detection -------------------------------------------------------
-
-export interface ChowOption {
-  /** The two tiles from hand (by id) that complete the run with the discard. */
-  tileIds: [string, string]
-}
 
 export interface ClaimOptions {
   pung: boolean

@@ -141,6 +141,22 @@ export function tileGlyph(kind: TileKind): string {
   }
 }
 
+/** CSS modifier class that colors the tile glyph by suit/honor. */
+export function tileColorClass(kind: TileKind): string {
+  switch (kind.type) {
+    case 'suit':
+      return `tile--${kind.suit}` // tile--man, tile--pin, tile--sou
+    case 'wind':
+      return 'tile--wind'
+    case 'dragon':
+      return `tile--dragon-${kind.dragon}`
+    case 'flower':
+      return 'tile--flower'
+    case 'season':
+      return 'tile--season'
+  }
+}
+
 const SUIT_LABEL: Record<Suit, string> = { man: 'Characters', pin: 'Circles', sou: 'Bamboo' }
 const WIND_LABEL: Record<Wind, string> = { E: 'East', S: 'South', W: 'West', N: 'North' }
 const DRAGON_LABEL: Record<Dragon, string> = { red: 'Red Dragon', green: 'Green Dragon', white: 'White Dragon' }

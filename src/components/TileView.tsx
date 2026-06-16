@@ -1,5 +1,5 @@
 import type { Tile } from '../game/types'
-import { tileGlyph, tileLabel, isSuited } from '../game/tiles'
+import { tileGlyph, tileLabel, tileColorClass } from '../game/tiles'
 
 interface TileViewProps {
   tile: Tile
@@ -25,12 +25,7 @@ export function TileView({
   if (highlighted) classes.push('tile--highlighted')
   if (facedown) classes.push('tile--facedown')
   if (clickable) classes.push('tile--clickable')
-  // Dragons/winds/honors get a colored accent.
-  if (tile.kind.type === 'dragon') classes.push(`tile--dragon-${tile.kind.dragon}`)
-  if (!isSuited(tile.kind) && tile.kind.type !== 'flower' && tile.kind.type !== 'season') {
-    classes.push('tile--honor')
-  }
-  if (tile.kind.type === 'flower' || tile.kind.type === 'season') classes.push('tile--bonus')
+  if (!facedown) classes.push(tileColorClass(tile.kind))
 
   return (
     <button
